@@ -5,7 +5,6 @@ import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -14,13 +13,13 @@ import javafx.util.Duration;
 public class GameController {
 
     private Circle ball;
-    private double x_speed = 3;
-    private double y_speed = 3;
+    private double x_speed = 2;
+    private double y_speed = 0;
     final private int WIDTH = 600;
     final private int HEIGHT = 500;
-    final private int BALL_SIZE = 20;
+    final private int BALL_SIZE = 8;
     final private int RECTANGLE_HEIGHT = 80;
-    final private int RECTANGLE_WIDTH = 20;
+    final private int RECTANGLE_WIDTH = 10;
     private int playerScore;
     private int computerScore;
     private Timeline t;
@@ -60,7 +59,7 @@ public class GameController {
 
         resetBallPosition();
 
-        KeyFrame k = new KeyFrame(Duration.millis(10), e -> {
+        KeyFrame k = new KeyFrame(Duration.millis(5), e -> {
 
             ball.setCenterX(ball.getCenterX() + x_speed);
             ball.setCenterY((ball.getCenterY() + y_speed));
@@ -77,25 +76,28 @@ public class GameController {
                 e.consume();
                 computerScore++;
                 resetGame();
-                switchBallDirection();
+                computerBallDirection();
             }
 
             if (ball.getCenterX() <= (RECTANGLE_WIDTH + (BALL_SIZE * 0.5))
-                    && (ball.getCenterY() <= leftRectangle.getY() + RECTANGLE_HEIGHT)) {
-                switchBallDirection();
+                    && (ball.getCenterY() <= leftRectangle.getY() + (RECTANGLE_HEIGHT))
+                    && ball.getCenterY() >= leftRectangle.getY()) {
+                switchBallDirection((((leftRectangle.getY() + (RECTANGLE_HEIGHT)) - ball.getCenterY()) / RECTANGLE_HEIGHT) - 1);
             }
 
             if (ball.getCenterX() >= (WIDTH - RECTANGLE_WIDTH - (0.5 * BALL_SIZE))
-                    && ball.getCenterY() <= rightRectangle.getY() + RECTANGLE_HEIGHT) {
-                switchBallDirection();
+                    && (ball.getCenterY() <= rightRectangle.getY() + (RECTANGLE_HEIGHT))
+                    && ball.getCenterY() >= rightRectangle.getY()) {
+                if (x_speed > 0 ) {
+                    x_speed = -x_speed;
+                }
             }
-
 
             if ((ball.getCenterX() > WIDTH - BALL_SIZE)) {
                 e.consume();
                 playerScore++;
                 resetGame();
-                switchBallDirection();
+                computerBallDirection();
             }
 
 
@@ -119,13 +121,35 @@ public class GameController {
         ball.setCenterY(primaryStage.getHeight() / 2);
     }
 
-    private void switchBallDirection() {
+    private void switchBallDirection(double impactZone) {
 
-        if (x_speed > 0) {
-            x_speed = -x_speed;
+        impactZone = Math.abs(impactZone);
+
+        if (x_speed < 0)
+            x_speed = Math.abs(x_speed);
+
+        if (impactZone <= 0.25) {
+            y_speed = 2;
+            y_speed = -y_speed;
+        } else if (impactZone < 0.45) {
+            y_speed = 1;
+            y_speed = -y_speed;
+        } else if (impactZone >= 0.45 && impactZone <= 0.55) {
+            y_speed = 0;
         } else {
-                x_speed = Math.abs(x_speed);
+            y_speed = Math.abs(y_speed);
+            if (impactZone <= 0.75) {
+                y_speed = 1;
+            } else if (impactZone <= 0.99) {
+                y_speed = 2;
             }
+        }
+    }
+
+    private void computerBallDirection() {
+
+        x_speed = -x_speed;
+        y_speed = -y_speed;
     }
 
     private void startGame() {
