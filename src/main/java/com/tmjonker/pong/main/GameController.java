@@ -20,8 +20,8 @@ public class GameController {
     private double y_speed_ball = 0;
     private double max_angle_ball = 3;
     private double y_speed_paddle = (x_speed_ball + y_speed_ball) * 0.75;
-    final private int WIDTH = 600;
-    final private int HEIGHT = 500;
+    final private int WIDTH = 900;
+    final private int HEIGHT = 800;
     final private int BALL_SIZE = 8;
     final private Rectangle leftPaddle;
     final private Rectangle rightPaddle;
@@ -100,12 +100,12 @@ public class GameController {
             computerHit = false;
 
         impactZone = Math.abs(impactZone);
-        y_speed_paddle = ((Math.abs(y_speed_ball) + Math.abs(x_speed_ball)) * 1.25);
+        y_speed_paddle = ((Math.abs(y_speed_ball) + Math.abs(x_speed_ball))) * 1.10;
 
         y_speed_ball = impactZone * max_angle_ball;
         x_speed_ball = Math.abs(x_speed_ball);
 
-        if (impactZone > 0.65)
+        if (impactZone > 0.70)
             y_speed_ball = Math.abs(y_speed_ball);
 
         if (impactZone > 0.48 && impactZone < 0.52)
@@ -151,13 +151,17 @@ public class GameController {
 
         // determines placement of computer paddle.
         if (x_speed_ball > 0 ) {
-            if (ball.getCenterX() > WIDTH * 0.75) {
+            if (ball.getCenterX() > WIDTH * 0.60) {
                 if (rightPaddle.getY() < right_paddle_center) {
                     rightPaddle.setY(rightPaddle.getY() + y_speed_paddle);
                 } else if (rightPaddle.getY() > right_paddle_center) {
                     rightPaddle.setY(rightPaddle.getY() - y_speed_paddle);
                 }
             }
+        } else if (rightPaddle.getY() > (HEIGHT/2 - (RECTANGLE_HEIGHT*0.5))) {
+            rightPaddle.setY(rightPaddle.getY() - 1);
+        } else if (rightPaddle.getY() < (HEIGHT/2 - (RECTANGLE_HEIGHT*0.5))) {
+            rightPaddle.setY(rightPaddle.getY() + 1);
         }
 
         // indicates that the computer has scored.
