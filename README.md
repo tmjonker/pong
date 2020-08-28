@@ -1,6 +1,6 @@
 # Pong
 
-![screenshot of program](https://github.com/tmjonker/pong/blob/master/pong_screenshot.png)
+![screenshot of program](https://github.com/tmjonker/pong/blob/master/pong_screenshot1.png)
 
 ## Description
 
