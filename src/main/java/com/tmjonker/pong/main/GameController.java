@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -16,9 +17,9 @@ import javafx.util.Duration;
 public class GameController {
 
     private Circle ball;
-    private double x_speed_ball = 2;
+    private double x_speed_ball = 3;
     private double y_speed_ball = 0;
-    private double max_angle_ball = 3;
+    private double max_angle_ball = 1.5;
     private double y_speed_paddle = (x_speed_ball + y_speed_ball) * 0.75;
     final private int WIDTH = 900;
     final private int HEIGHT = 800;
@@ -40,12 +41,17 @@ public class GameController {
         ball.setCenterX(BALL_SIZE);
         ball.setCenterY(BALL_SIZE);
 
-        leftPaddle = new Rectangle(0, 0, RECTANGLE_WIDTH, RECTANGLE_HEIGHT);
+        leftPaddle = new Rectangle(10, 0, RECTANGLE_WIDTH, RECTANGLE_HEIGHT);
         leftPaddle.setFill(Color.WHITE);
-        rightPaddle = new Rectangle(WIDTH - RECTANGLE_WIDTH, 0, RECTANGLE_WIDTH, RECTANGLE_HEIGHT);
+        rightPaddle = new Rectangle(WIDTH - RECTANGLE_WIDTH - 10, 0, RECTANGLE_WIDTH, RECTANGLE_HEIGHT);
         rightPaddle.setFill(Color.WHITE);
 
-        root.getChildren().addAll(ball, leftPaddle, rightPaddle);
+        Line middleLine = new Line(WIDTH/2, 0, WIDTH/2, HEIGHT);
+        middleLine.setStroke(Color.WHITE);
+        middleLine.getStrokeDashArray().addAll(12d, 20d);
+        middleLine.setStrokeWidth(2);
+
+        root.getChildren().addAll(ball, middleLine, leftPaddle, rightPaddle);
         Scene scene = new Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
         // Controls movement of the left paddle by the human player.
@@ -60,6 +66,7 @@ public class GameController {
 
         primaryStage = new Stage();
         primaryStage.setScene(scene);
+        primaryStage.setTitle("Pong");
         primaryStage.show();
 
         KeyFrame k = new KeyFrame(Duration.millis(5), e -> gamePlay(e));
@@ -105,14 +112,14 @@ public class GameController {
         y_speed_ball = impactZone * max_angle_ball;
         x_speed_ball = Math.abs(x_speed_ball);
 
-        if (impactZone > 0.70)
+        if (impactZone > 0.52)
             y_speed_ball = Math.abs(y_speed_ball);
 
-        if (impactZone > 0.48 && impactZone < 0.52)
+        if (impactZone >= 0.48 && impactZone <= 0.52)
             y_speed_ball = 0;
 
-        if (impactZone < 0.45) {
-            y_speed_ball += max_angle_ball / 2;
+        if (impactZone < 0.48) {
+            y_speed_ball = (1.00 - impactZone) * max_angle_ball;
             y_speed_ball = -y_speed_ball;
         }
 
@@ -181,16 +188,16 @@ public class GameController {
         }
 
         // human player paddle hit indicator.
-        if (ball.getCenterX() <= (RECTANGLE_WIDTH + (BALL_SIZE * 0.5))
-                && (ball.getCenterY() + (BALL_SIZE * 0.5) <= leftPaddle.getY() + (RECTANGLE_HEIGHT))
-                && ball.getCenterY() >= leftPaddle.getY() + (BALL_SIZE * 0.5)) {
+        if (ball.getCenterX() <= (10 + RECTANGLE_WIDTH + (BALL_SIZE * 0.5))
+                && (ball.getCenterY() <= leftPaddle.getY() + (RECTANGLE_HEIGHT))
+                && ball.getCenterY() + (BALL_SIZE / 2) >= leftPaddle.getY()) {
             switchBallDirection((((leftPaddle.getY() + (RECTANGLE_HEIGHT)) - ball.getCenterY()) / RECTANGLE_HEIGHT) - 1);
         }
 
         // computer player paddle hit indicator.
-        if (ball.getCenterX() >= (WIDTH - RECTANGLE_WIDTH )
-                && (ball.getCenterY() + (0.5 * BALL_SIZE) <= rightPaddle.getY() + (RECTANGLE_HEIGHT))
-                && ball.getCenterY() >= rightPaddle.getY()+ (BALL_SIZE * 0.5)) {
+        if (ball.getCenterX() >= (WIDTH - RECTANGLE_WIDTH - 10)
+                && (ball.getCenterY() <= rightPaddle.getY() + (RECTANGLE_HEIGHT))
+                && ball.getCenterY() + (BALL_SIZE / 2) >= rightPaddle.getY()) {
             switchBallDirection((((rightPaddle.getY() + (RECTANGLE_HEIGHT)) - ball.getCenterY()) / RECTANGLE_HEIGHT) - 1);
         }
 
