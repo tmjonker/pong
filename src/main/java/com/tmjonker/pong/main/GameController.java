@@ -1,9 +1,9 @@
 package com.tmjonker.pong.main;
 
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -11,6 +11,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -28,9 +31,13 @@ public class GameController {
     final private Rectangle rightPaddle;
     final private int RECTANGLE_HEIGHT = 80;
     final private int RECTANGLE_WIDTH = 10;
-    private int playerScore;
-    private int computerScore;
-    private Timeline t;
+    private int playerScore = 0;
+    private int computerScore = 0;
+    private Text playerScoreText;
+    private Text computerScoreText;
+    private Text computerWinnerText;
+    private Text playerWinnerText;
+    private Timeline timeLine;
     private Stage primaryStage;
 
     public GameController() {
@@ -51,7 +58,34 @@ public class GameController {
         middleLine.getStrokeDashArray().addAll(12d, 20d);
         middleLine.setStrokeWidth(2);
 
-        root.getChildren().addAll(ball, middleLine, leftPaddle, rightPaddle);
+        playerScoreText = new Text();
+        playerScoreText.setFill(Color.WHITE);
+        playerScoreText.setFont(Font.font("times new roman", FontWeight.NORMAL, 48));
+        playerScoreText.setLayoutX(194.5);
+        playerScoreText.setLayoutY((100));
+        playerScoreText.setText(Integer.toString(playerScore));
+
+        computerScoreText = new Text();
+        computerScoreText.setFill(Color.WHITE);
+        computerScoreText.setFont(Font.font("Times New Roman", FontWeight.NORMAL, 48));
+        computerScoreText.setLayoutX((WIDTH/2) + 194.5);
+        computerScoreText.setLayoutY((100));
+        computerScoreText.setText(Integer.toString(computerScore));
+
+        playerWinnerText = new Text();
+        playerWinnerText.setFill(Color.WHITE);
+        playerWinnerText.setFont(Font.font("Times New Roman", FontWeight.NORMAL, 48));
+        playerWinnerText.setLayoutX(151.2);
+        playerWinnerText.setLayoutY((HEIGHT /4));
+
+        computerWinnerText = new Text();
+        computerWinnerText.setFill(Color.WHITE);
+        computerWinnerText.setFont(Font.font("Times New Roman", FontWeight.NORMAL, 48));
+        computerWinnerText.setLayoutX((WIDTH/2) + 151.2);
+        computerWinnerText.setLayoutY((HEIGHT / 4));
+
+        root.getChildren().addAll(ball, middleLine, leftPaddle, rightPaddle,
+                playerScoreText, computerScoreText, playerWinnerText, computerWinnerText);
         Scene scene = new Scene(root, WIDTH, HEIGHT, Color.BLACK);
 
         // Controls movement of the left paddle by the human player.
@@ -62,17 +96,20 @@ public class GameController {
         scene.setOnKeyPressed(e -> {
             if (e.getCode().equals(KeyCode.ENTER))
                 startGame(); // Start game by pressing Enter.
+            else if (e.getCode().equals(KeyCode.SPACE))
+                resetGame();
         });
 
         primaryStage = new Stage();
         primaryStage.setScene(scene);
         primaryStage.setTitle("Pong");
         primaryStage.show();
+        primaryStage.setOnCloseRequest(e -> System.exit(0));
 
-        KeyFrame k = new KeyFrame(Duration.millis(5), e -> gamePlay(e));
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(5), e -> gamePlay(e));
 
-        t = new Timeline(k);
-        t.setCycleCount(Timeline.INDEFINITE);
+        timeLine = new Timeline(keyFrame);
+        timeLine.setCycleCount(Timeline.INDEFINITE);
 
         resetGame();
     }
@@ -80,12 +117,15 @@ public class GameController {
     private void resetGame() {
 
         playerScore = 0;
+        updatePlayerScore(true);
         computerScore = 0;
+        updateComputerScore(true);
         resetNextRound();
     }
 
     private void resetNextRound() {
 
+        checkScore();
         stopGame();
         ball.setCenterX(primaryStage.getWidth() / 2);
         ball.setCenterY(primaryStage.getHeight() / 2);
@@ -130,18 +170,50 @@ public class GameController {
 
     private void computerBallDirection() {
 
-        x_speed_ball = -x_speed_ball;
-        y_speed_ball = -y_speed_ball;
+        if (x_speed_ball > 0)
+            x_speed_ball = -x_speed_ball;
+        else if (x_speed_ball < 0)
+            x_speed_ball = Math.abs(x_speed_ball);
+    }
+
+    private void updateComputerScore(boolean isNull) {
+
+        if (isNull)
+            computerScoreText.setText(Integer.toString(computerScore));
+        else
+            computerScoreText.setText(Integer.toString(++computerScore));
+    }
+
+    private void updatePlayerScore(boolean isNull) {
+
+        if (isNull)
+            playerScoreText.setText(Integer.toString(computerScore));
+        else
+            playerScoreText.setText(Integer.toString(++computerScore));
     }
 
     private void startGame() {
 
-        t.play();
+        timeLine.play();
     }
 
     private void stopGame() {
 
-        t.stop();
+        timeLine.stop();
+    }
+
+    private void checkScore() {
+
+        if (computerScore == 10 && playerScore == 10) {
+            playerWinnerText.setText("TIE");
+            computerWinnerText.setText("TIE");
+        } else if (computerScore == 10 && playerScore < 10) {
+            playerWinnerText.setText("LOSER");
+            computerWinnerText.setText("WINNER");
+        } else if (computerScore < 10 && playerScore == 10) {
+            playerWinnerText.setText("WINNER");
+            computerWinnerText.setText("LOSER");
+        }
     }
 
     /**
@@ -173,17 +245,15 @@ public class GameController {
 
         // indicates that the computer has scored.
         if ((ball.getCenterX() < BALL_SIZE)) {
-            e.consume();
-            computerScore++;
-            resetGame();
+            updateComputerScore(false);
+            resetNextRound();
             computerBallDirection();
         }
 
         // indicates that the human player has scored.
         if ((ball.getCenterX() > WIDTH - BALL_SIZE)) {
-            e.consume();
-            playerScore++;
-            resetGame();
+            updatePlayerScore(false);
+            resetNextRound();
             computerBallDirection();
         }
 
