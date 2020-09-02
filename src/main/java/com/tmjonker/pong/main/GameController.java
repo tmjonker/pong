@@ -27,8 +27,8 @@ public class GameController {
     final private int WIDTH = 900;
     final private int HEIGHT = 800;
     final private int BALL_SIZE = 8;
-    final private Rectangle leftPaddle;
-    final private Rectangle rightPaddle;
+    private Rectangle leftPaddle;
+    private Rectangle rightPaddle;
     final private int RECTANGLE_HEIGHT = 80;
     final private int RECTANGLE_WIDTH = 10;
     private int playerScore = 0;
@@ -42,8 +42,22 @@ public class GameController {
 
     public GameController() {
 
-        Group root = new Group();
+        drawGameBoard(); // generates the game layout.
 
+        implementAnimation(); // generates KeyFrame and TimeLine.
+
+        resetGame(); // sets game up.
+    }
+
+    private void implementAnimation() {
+
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(5), e -> gamePlay(e));
+
+        timeLine = new Timeline(keyFrame);
+        timeLine.setCycleCount(Timeline.INDEFINITE);
+    }
+
+    private void drawGameBoard() {
         ball = new Circle(BALL_SIZE, Color.WHITE);
         ball.setCenterX(BALL_SIZE);
         ball.setCenterY(BALL_SIZE);
@@ -84,6 +98,8 @@ public class GameController {
         computerWinnerText.setLayoutX((WIDTH/2) + 151.2);
         computerWinnerText.setLayoutY((HEIGHT / 4));
 
+        Group root = new Group();
+
         root.getChildren().addAll(ball, middleLine, leftPaddle, rightPaddle,
                 playerScoreText, computerScoreText, playerWinnerText, computerWinnerText);
         Scene scene = new Scene(root, WIDTH, HEIGHT, Color.BLACK);
@@ -105,13 +121,6 @@ public class GameController {
         primaryStage.setTitle("Pong");
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> System.exit(0));
-
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(5), e -> gamePlay(e));
-
-        timeLine = new Timeline(keyFrame);
-        timeLine.setCycleCount(Timeline.INDEFINITE);
-
-        resetGame();
     }
 
     private void resetGame() {
@@ -147,7 +156,7 @@ public class GameController {
             computerHit = false;
 
         impactZone = Math.abs(impactZone);
-        y_speed_paddle = ((Math.abs(y_speed_ball) + Math.abs(x_speed_ball))) * 1.10;
+        y_speed_paddle = ((Math.abs(y_speed_ball) + Math.abs(x_speed_ball))) * 1.10; //sets computer paddle response speed.
 
         y_speed_ball = impactZone * max_angle_ball;
         x_speed_ball = Math.abs(x_speed_ball);
