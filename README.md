@@ -4,7 +4,7 @@
 
 ## Description
 
-The classic game pong.  It is only playable vs a computer component.
+The classic game pong.  It is only playable vs a computer component. I used JavaFX for the UI / shapes.
 
 ## Getting Started
 
